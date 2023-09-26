@@ -79,7 +79,7 @@ public CSGameRules_RestartRound() {
     ApplyMode(g_currentRoundModeIdx)
 
     for (new p = 1; p <= MaxClients; p++) {
-        EquipManager_PlayerResetEquip(p)
+        EquipManager_Reset(p)
     }
 }
 
@@ -183,7 +183,7 @@ bool: ApplyMode(const index) {
     if (index < 0)
         return false
 
-    ReloadConfig()
+    Config_Reload()
 
     new JSON: arrModes = GetModesArr()
     if (arrModes == Invalid_JSON)
@@ -193,7 +193,7 @@ bool: ApplyMode(const index) {
     if (json_object_has_value(objMode, "cvars")) {
         new JSON: objCvars = json_object_get_value(objMode, "cvars")
 
-        CvarsHandler_LoadCvars(objCvars)
+        CvarsHandler_ApplyCvars(objCvars)
 
         json_free(objCvars)
     }

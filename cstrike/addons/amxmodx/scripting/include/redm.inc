@@ -180,6 +180,33 @@ stock UTIL_ReloadWeapons(const player, bool: currentWeapon = false) {
 }
 
 /**
+ * Sends a death message to a player or set of players.
+ *
+ * This function sends a death message to a specific player or set of players. A death message
+ * typically includes information about the killer, victim, whether it was a headshot, and the
+ * weapon used.
+ *
+ * @param dest       The destination of the death message (one or more players).
+ * @param receiver   The receiver of the message (typically the player(s) who see the death message).
+ * @param killer     The ID of the killer player (attacker).
+ * @param victim     The ID of the victim player (the one who died).
+ * @param headshot   A flag indicating whether the death was a headshot (1 for headshot, 0 for not).
+ * @param weaponName The name of the weapon used in the kill.
+ */
+stock UTIL_DeathMsg(const dest, const receiver, const killer, const victim, const headshot, const weaponName[]) {
+    static msg_deathMsg
+    if (!msg_deathMsg)
+        msg_deathMsg = get_user_msgid("DeathMsg")
+
+    message_begin(dest, msg_deathMsg, _, receiver)
+    write_byte(killer)
+    write_byte(victim)
+    write_byte(headshot)
+    write_string(weaponName)
+    message_end()
+}
+
+/**
  * Checks if a player is blinded.
  *
  * This function checks if a player is blinded based on the current game time.
