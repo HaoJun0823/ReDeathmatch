@@ -219,6 +219,25 @@ stock bool: CBasePlayer_IsBlind(const player) {
 }
 
 /**
+ * Retrieves the round restart delay duration from a game mode CVAR.
+ *
+ * This function is used to retrieve the round restart delay duration from a game mode CVAR
+ * (ConVar). It checks if the CVAR exists and returns its value as a floating-point number.
+ * If the CVAR doesn't exist or cannot be retrieved, it returns a default value for the round
+ * restart delay.
+ *
+ * @return The duration of the round restart delay as a floating-point number.
+ */
+stock Float: CHalfLifeMultiplay_GetRoundRestartDelay() {
+    static pointer
+    if (!pointer)
+        pointer = get_cvar_pointer("mp_round_restart_delay")
+
+    const Float: ROUND_BEGIN_DELAY = 5.0    // delay before beginning new round
+    return pointer ? get_pcvar_float(pointer) : ROUND_BEGIN_DELAY
+}
+
+/**
  * Converts a floating-point value to a FixedUnsigned16 format.
  *
  * This function converts a floating-point value to the FixedUnsigned16 format,

@@ -33,6 +33,8 @@ public plugin_init() {
     register_plugin("ReDeathmatch", REDM_VERSION, "Sergey Shorokhov")
     register_dictionary("redm/redm.txt")
 
+    RegisterHookChain(RG_RoundEnd, "RoundEnd_Post", .post = true)
+    RegisterHookChain(RG_CSGameRules_RestartRound, "CSGameRules_RestartRound", .post = false)
     RegisterHookChain(RG_CSGameRules_PlayerKilled, "CSGameRules_PlayerKilled_Post", .post = true)
 
     create_cvar("redm_version", REDM_VERSION, (FCVAR_SERVER|FCVAR_SPONLY))
@@ -104,6 +106,20 @@ public client_putinserver(player) {
 
 public client_disconnected(player, bool: drop, message[], maxLen) {
     ModeVote_Disconnected(player)
+}
+
+public RoundEnd_Post(WinStatus: status, ScenarioEventEndRound: event, Float: tmDelay) {
+    if (!IsActive())
+        return
+    
+    RoundModes_RoundEnd()
+}
+
+public CSGameRules_RestartRound() {
+    if (!IsActive())
+        return
+
+    RoundModes_RestartRound()
 }
 
 public CSGameRules_PlayerKilled_Post(const victim, const killer, const inflictor) {
