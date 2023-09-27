@@ -374,6 +374,8 @@ public CBasePlayer_OnSpawnEquip(const player, bool: addDefault, bool: equipGame)
     if (!IsActive())
         return
 
+    SetHookChainArg(3, ATYPE_BOOL, (equipGame = false))
+
     RoundModes_OnSpawnEquip(player)
     ModeVote_OnSpawnEquip(player)
 
