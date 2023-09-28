@@ -59,6 +59,7 @@ static redm_keep_weapon_slot
  * CVar to control whether to open the weapon equip menu on spawn.
  */
 static bool: redm_open_equip_menu
+static bool: redm_equip_only_on_spawn
 
 
 EquipManager_Init() {
@@ -84,6 +85,15 @@ EquipManager_Init() {
             .description = "Open weapon equip menu on spawn."
         ),
         redm_open_equip_menu
+    )
+    bind_pcvar_num(
+        create_cvar(
+            "redm_equip_only_on_spawn", "1",
+            .has_min = true, .min_val = 0.0,
+            .has_max = true, .max_val = 1.0,
+            .description = "Equip player with new weapon only on spawn."
+        ),
+        redm_equip_only_on_spawn
     )
 
     register_concmd("redm_dump_equip", "ConCmd_redm_dump_equip", ADMIN_MAP, "Dump loaded equipset from config to table in console.")
@@ -273,9 +283,14 @@ static bool: Player_CallEquipMenu(const player) {
 static Menu_ChooseEquip(const player, const EquipType_e: section) {
     SetGlobalTransTarget(player)
 
+    new const menuNames[EquipType_e][] = {
+        "PrimaryEquip",
+        "SecondaryEquip",
+    }
+
     new menu = menu_create(
         fmt("%l^n%l",
-            section == et_Primary ? "PrimaryEquip" : "SecondaryEquip",
+            menuNames[section],
             "ToClosePressG"
         ),
         "MenuHandler_ChooseEquip"
@@ -347,14 +362,24 @@ public MenuHandler_ChooseEquip(const player, const menu, const item) {
     }
 
     new EquipType_e: section = EquipType_e: strtol(info)
+
+    new prevItem = g_playerWeapons[player][section]
+
     g_playerWeapons[player][section] = item
 
-    Player_GiveWeapon(player, section)
+    if (!redm_equip_only_on_spawn || prevItem == EQUIP_NOT_CHOOSEN)
+        Player_GiveWeapon(player, section)
 
     UTIL_PlaySoundEffect(player, "fvox/blip.wav", .pitch = 80)
 
     new bool: hasNextSection = (++section % EquipType_e) != EquipType_e: 0
     if (!hasNextSection) {
+        if (redm_equip_only_on_spawn) {
+            client_print_color(player, print_team_red, "[Re:DM] %l",
+                "EquipApplyOnRespawn"
+            )
+        }
+
         client_print_color(player, print_team_red, "[Re:DM] %l",
             "YouCanChooseEquip"
         )
@@ -407,18 +432,23 @@ public CBasePlayer_OnSpawnEquip(const player, bool: addDefault, bool: equipGame)
 }
 
 public CBasePlayer_OnSpawnEquip_Post(const player, bool: addDefault, bool: equipGame) {
+    new EquipType_e: notEquippedSection = EquipType_e: EQUIP_NOT_CHOOSEN
+
     for (new EquipType_e: section; section < EquipType_e; section++) {
+        if (!HasEquipItems(section))
+            continue
+
         if (g_playerWeapons[player][section] != EQUIP_NOT_CHOOSEN) {
             Player_GiveWeapon(player, section)
 
             continue
         }
 
-        if (redm_open_equip_menu)
-            Menu_ChooseEquip(player, section)
-
-        return
+        notEquippedSection = section
     }
+
+    if (redm_open_equip_menu && notEquippedSection != EquipType_e: EQUIP_NOT_CHOOSEN)
+        Menu_ChooseEquip(player, notEquippedSection)
 }
 
 public CBasePlayer_AddPlayerItem(const player, const item) {

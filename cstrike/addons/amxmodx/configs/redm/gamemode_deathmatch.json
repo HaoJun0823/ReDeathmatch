@@ -72,6 +72,9 @@
         // Open weapon equip menu on spawn.
         "redm_open_equip_menu": "0",
 
+        // Equip player with new weapon only on spawn.
+        "redm_equip_only_on_spawn": "0",
+
         // How much to restore HP when killing an enemy.
         "redm_healer": "10",
 
